@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: site-template-html
+  namespace: site-template
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+      <meta charset="UTF-8">
+      <title>Site Template - Kubernetes</title>
+      <style>
+        body { font-family: sans-serif; text-align: center; margin-top: 10%; background:#0f172a; color:#f1f5f9; }
+        h1 { color: #38bdf8; }
+      </style>
+    </head>
+    <body>
+      <h1>Déploiement Nginx sur Kubernetes</h1>
+      <p>Servi par un pod parmi 4 réplicas, derrière un Ingress HTTPS.</p>
+      <p>Hostname du pod : <span id="host"></span></p>
+      <script>document.getElementById('host').innerText = window.location.hostname;</script>
+    </body>
+    </html>
+  nginx.conf: |
+    server {
+        listen 80;
+        server_name _;
+        root /usr/share/nginx/html;
+        index index.html;
+
+        location / {
+            try_files $uri $uri/ =404;
+        }
+
+        location /healthz {
+            access_log off;
+            return 200 "ok\n";
+        }
+    }
