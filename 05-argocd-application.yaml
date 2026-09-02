@@ -1,0 +1,33 @@
+# À appliquer dans le namespace où tourne ArgoCD (généralement "argocd")
+# une fois que les manifests ci-dessus sont poussés sur un dépôt Git.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: site-template
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/cedricRabe/gitops.git
+    targetRevision: main
+    path: .
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: site-template
+
+  syncPolicy:
+    automated:
+      prune: true       # supprime les ressources retirées du repo
+      selfHeal: true     # corrige toute dérive manuelle sur le cluster
+    syncOptions:
+      - CreateNamespace=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
